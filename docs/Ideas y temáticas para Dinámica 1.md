@@ -77,33 +77,7 @@ El estudiante desensambla el archivo objeto y ejecuta `gdb` para inspeccionar el
 #### Mecanismo de Automatización de la Corrección:
 Las matrices de ofuscación y las firmas objetivo inyectadas en la compilación de `caja_negra.o` son generadas dinámicamente mediante un script del cuerpo docente, siendo paramétricas y únicas en función de la C.I. del alumno. Cuando el estudiante deduce  su clave y ejecuta el binario final, el bloque de éxito en la caja negra se activa y retorna un token criptográfico (el hash del estudiante) al registro `%rax`. El programa `main.c` imprime esta cadena, la cual el programa de corrección evaluará para registrar una nota válida, inequívoca y libre de plagio.
 
-### Temática 3: Anomalía-IEEE
 
-- **Enfoque:** Inyección de registros vectoriales aprovechando indeterminaciones de punto flotante.
-    
-
-#### Objetivo
-
-Manipular el comportamiento de las instrucciones condicionales de la CPU mediante la introducción deliberada de anomalías de la especificación IEEE 754 de punto flotante en los registros vectoriales del procesador.
-
-#### Relación con la Nota Informativa
-
-- **Ítem 1:** Representación de números en punto flotante, estudio de casos (IEEE 754: bits de signo, exponente y mantisa), e indeterminaciones matemáticas.
-    
-- **Ítem 4:** Tipos de instrucciones (bits de resultado, transferencias de datos vectoriales), registros especializados (`XMM`), y mecanismos de flujo de control excepcional bajo comparaciones no ordenadas.
-    
-
-#### Estructura de la Temática
-
-Se presenta un software precompilado que realiza la validación de un token numérico interpretándolo como un valor de punto flotante de doble precisión. En el nivel de ensamblador, la verificación se ejecuta mediante la instrucción `UCOMISS`, la cual reacciona de forma particular ante valores no numéricos, modificando los bits de estado en el registro `%rflags`.
-
-#### Aplicación Práctica (Ventana de 6 Horas)
-
-El estudiante debe estructurar a nivel binario (calculando signo, exponente y mantisa) una cadena hexadecimal que represente un **NaN (Not a Number)** silencioso. Al inyectar este valor en el registro `XMM0`, la instrucción `UCOMISS` entra en una condición de comparación no ordenada, activando simultáneamente las banderas de cero, paridad y acarreo (`ZF=1`, `PF=1`, `CF=1`). Esto fuerza a que las instrucciones de salto subsecuentes (`jp` / `jbe`) tomen un desvío lógico imprevisto, otorgando acceso al sistema.
-    
-#### Mecanismo de Automatización de la Corrección
-
-Al corromper con éxito la lógica de comparación vectorial, el binario genera un código hash dependiente de la estructura del NaN inyectado. El programa de corrección evalúa matemáticamente si los bytes cumplen con las propiedades de indefinición de la especificación IEEE 754 para el identificador del alumno.
 ### Temática 4: Asimetría de Signo
 
 - **Enfoque:** Evasión de validaciones explotando saltos condicionales con/sin signo en la CPU.
@@ -132,33 +106,6 @@ El alumno debe hallar un número hexadecimal cuyo bit más significativo sea 1 (
 
 El entorno automatizado ejecuta el binario aislado pasándole el argumento del estudiante. Si la entrada logra que las dos instrucciones de salto mutuamente excluyentes den una respuesta positiva secuencial, el programa de corrección captura el estado de éxito y otorga la calificación.
 
-### Temática 5: Reloj-RDTSC
-
-- **Enfoque:** Anti-debugging y evasión de entornos mediante conteo físico de ciclos de reloj.
-    
-
-#### Objetivo
-
-Implementar y evadir mecanismos de control basados en el tiempo físico de ejecución de la microarquitectura, utilizando contadores de hardware para detectar la presencia de software de depuración o análisis paso a paso.
-
-#### Relación con la Nota Informativa
-
-- **Ítem 2:** Expresión del rendimiento de un programa, comprensión de los procesadores modernos, identificación de ineficiencias y medición de tiempos de ejecución a bajo nivel.
-    
-- **Ítem 4:** Instrucciones especializadas de la arquitectura de 64 bits (`RDTSC`), interrupciones de software, flujo de control excepcional y manipulación de registros de depuración del procesador.
-    
-
-#### Estructura de la Temática
-
-El binario contiene la clave cifrada en su sección de datos estáticos. Al intentar ejecutar el programa paso a paso en `GDB`, el binario aborta. Esto ocurre porque el programa utiliza la instrucción nativa `RDTSC` (Read Time-Stamp Counter) para calcular el número de ciclos de reloj que toma ejecutar un bloque de instrucciones. La interrupción de software generada por el depurador eleva el conteo de ciclos de unos pocos cientos a millones.
-
-#### Aplicación Práctica (Ventana de 6 Horas)
-
-Se proporciona al estudiante el desplazamiento exacto del segmento de memoria afectado. El estudiante debe realizar un parcheo hexadecimal en caliente (modificando los bytes de la instrucción `RDTSC` u omitiendo el salto condicional `jnez` reemplazándolos por instrucciones nulas `NOP` — `0x90`), esto siendo posible realizarse en GDB o editando en hexadecimal el propio programa. Una vez neutralizado el control de tiempo, puede extraer la clave.
-
-#### Mecanismo de Automatización de la Corrección
-
-La clave extraída de la memoria es dinámica y algorítmica para cada cédula. El alumno entrega esta cadena para el programa de corrección. Dado que es imposible obtenerla sin haber anulado el control de ciclos del binario en tiempo de ejecución, la coincidencia exacta valida la resolución del reto.
 
 ## Matriz de Coherencia de Evaluaciones (Para el Cuerpo Docente)
 
